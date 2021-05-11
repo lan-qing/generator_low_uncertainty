@@ -2,6 +2,7 @@ import sys
 import time
 
 import torch
+import torch.nn.functional as F
 from PIL import Image
 import numpy as np
 import random
@@ -73,7 +74,16 @@ def accuracy(output, target, topk=(1,)):
     return res
 
 
-def train(train_loader, model, criterion, optimizer, epoch, half=True, print_freq=50, double=False, adv=None):
+def get_beta(epoch_idx, N):
+    return 1.0 / N / 100
+
+
+def elbo(out, y, kl_sum, beta):
+    ce_loss = F.cross_entropy(out, y)
+    return ce_loss + beta * kl_sum
+
+
+def train(train_loader, model, optimizer, epoch, N, half=True, print_freq=50, double=False, adv=None):
     """
         Run one train epoch
     """
@@ -105,8 +115,8 @@ def train(train_loader, model, criterion, optimizer, epoch, half=True, print_fre
             input_var = adv(model, input_var, target_var)
 
         # compute output
-        output = model(input_var)
-        loss = criterion(output, target_var)
+        output, kl = model(input_var)
+        loss = elbo(output, target, kl, get_beta(epoch, N))
 
         # compute gradient and do SGD step
         optimizer.zero_grad()
@@ -159,7 +169,7 @@ def validate(val_loader, model, criterion, half=True, print_freq=50, double=Fals
                 input_var = input_var.double()
 
             # compute output
-            output = model(input_var)
+            output, kl = model(input_var)
             loss = criterion(output, target_var)
 
             output = output.float()

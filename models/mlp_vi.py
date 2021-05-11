@@ -18,7 +18,7 @@ class MLP(nn.Module):
 
     def forward(self, x):
         kl_sum = 0
-        out = x
+        out = x.reshape(x.shape[0], -1)
         for l in self.layers:
             if type(l).__name__.startswith("Rand"):
                 out, kl = l.forward(out)
@@ -29,8 +29,8 @@ class MLP(nn.Module):
         return out, kl_sum
 
     def _make_layers(self, widths):
-        self.layers = []
+        layers = []
         for i in range(len(widths) - 1):
-            self.layers.append(RandLinear(self.sigma_0, self.N, self.init_s, widths[i], widths[i + 1]))
-        return self.layers
+            layers.append(RandLinear(self.sigma_0, self.N, self.init_s, widths[i], widths[i + 1]))
+        return nn.Sequential(*layers)
 
