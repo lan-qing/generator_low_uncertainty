@@ -90,10 +90,20 @@ class RandBatchNorm2d(nn.Module):
         weight = bias = None
         if self.affine:
             sig_weight = torch.exp(self.sigma_weight)
-            weight = self.mu_weight + sig_weight * self.eps_weight.normal_()
+
+            eps_weight = torch.Tensor(*self.eps_weight.size()).normal_().cuda()
+            assert eps_weight.shape == self.eps_weight.shape
+            weight = self.mu_weight + sig_weight * eps_weight
+
+            # weight = self.mu_weight + sig_weight * self.eps_weight.normal_()
             kl_weight = math.log(self.sigma_0) - self.sigma_weight + (sig_weight**2 + self.mu_weight**2) / (2 * self.sigma_0 ** 2) - 0.5
             sig_bias = torch.exp(self.sigma_bias)
-            bias = self.mu_bias + sig_bias * self.eps_bias.normal_()
+
+            eps_bias = torch.Tensor(*self.eps_bias.size()).normal_().cuda()
+            assert eps_bias.shape == self.eps_bias.shape
+            bias = self.mu_bias + sig_bias * eps_bias
+            # bias = self.mu_bias + sig_bias * self.eps_bias.normal_()
+
             kl_bias = math.log(self.sigma_0) - self.sigma_bias + (sig_bias**2 + self.mu_bias**2) / (2 * self.sigma_0 ** 2) - 0.5
 
         out = F.batch_norm(input, self.running_mean, self.running_var, weight, bias, self.training or not self.track_running_stats, exponential_average_factor, self.eps)

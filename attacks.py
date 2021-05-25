@@ -47,7 +47,7 @@ def pgd_reverse_on_uncertainty(model, images, labels, eps=1.0, alpha=0.01, iters
             model.zero_grad()
             cost = loss(outputs / 100000, labels)
             cost.backward()
-            if i % 10 == 0:
+            if i % 3 == 0:
                 print(i, cost, outputs)
                 print(torch.argmax(outputs))
             adv_images = images - alpha * images.grad.sign()
@@ -64,7 +64,7 @@ def pgd_reverse_on_uncertainty(model, images, labels, eps=1.0, alpha=0.01, iters
             model.zero_grad()
             cost = Ha + He
             cost.backward()
-            if i % 10 == 0:
+            if i % 3 == 0:
                 print(i, cost)
                 print(torch.argmax(outputs))
             adv_images = images - alpha * images.grad.sign()

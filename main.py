@@ -8,11 +8,11 @@ import torchvision.datasets as datasets
 import numpy as np
 
 from utils import *
-from model import MLPWrapper
+from model import MLPWrapper, LenetWrapper
 from visualization import to_img
 
 if __name__ == '__main__':
-    seed = 55
+    seed = 25
     print("Use random seed ", seed)
     signature = "test"
     rootpath = f"results/{signature}_seed{seed}/"
@@ -42,11 +42,15 @@ if __name__ == '__main__':
                                               num_workers=3)
     valloader = torch.utils.data.DataLoader(valset, batch_size=batch_size, shuffle=False, pin_memory=True,
                                           num_workers=3)
-    net = MLPWrapper(N=NTrainPointsMNIST)
+    # to_img(torch.reshape(trainset[0][0], [28, 28]).cpu().numpy(), "example.png")
+    # exit()
+    net = LenetWrapper(N=NTrainPointsMNIST)
+    # net = MLPWrapper(N=NTrainPointsMNIST)
     # for epoch in range(50):
     #     lr = 0.01
     #     net.fit(trainloader, lr=lr, epoch=epoch)
     #     net.validate(valloader)
-    net.load(rootpath + "model_50.pt")
+    # net.save("lenet_50.pt")
+    net.load(rootpath + "lenet_50.pt")
     img = net.generate_from_noise_low_uncertainty()
-    to_img(torch.reshape(img, [28, 28]).cpu().numpy(), "tmp2.png")
+    to_img(torch.reshape(img, [28, 28]).cpu().numpy(), "tmp8.png")
