@@ -45,11 +45,21 @@ class RandLinear(nn.Module):
 
     def forward(self, input):
         sig_weight = torch.exp(self.sigma_weight)
-        weight = self.mu_weight + sig_weight * self.eps_weight.normal_()
+
+        eps_weight = torch.Tensor(*self.eps_weight.size()).normal_().cuda()
+        assert eps_weight.shape == self.eps_weight.shape
+        weight = self.mu_weight + sig_weight * eps_weight
+
+        # weight = self.mu_weight + sig_weight * self.eps_weight.normal_()
         kl_weight = math.log(self.sigma_0) - self.sigma_weight + (sig_weight**2 + self.mu_weight**2) / (2 * self.sigma_0 ** 2) - 0.5
         if self.mu_bias is not None:
             sig_bias = torch.exp(self.sigma_bias)
-            bias = self.mu_bias + sig_bias * self.eps_bias.normal_()
+
+            eps_bias = torch.Tensor(*self.eps_bias.size()).normal_().cuda()
+            assert eps_bias.shape == self.eps_bias.shape
+            bias = self.mu_bias + sig_bias * eps_bias
+
+            # bias = self.mu_bias + sig_bias * self.eps_bias.normal_()
             kl_bias = math.log(self.sigma_0) - self.sigma_bias + (sig_bias**2 + self.mu_bias**2) / (2 * self.sigma_0 ** 2) - 0.5
         out = F.linear(input, weight, bias)
         kl = kl_weight.sum() + kl_bias.sum() if self.mu_bias is not None else kl_weight.sum()

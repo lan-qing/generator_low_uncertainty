@@ -9,6 +9,7 @@ import numpy as np
 
 from utils import *
 from model import MLPWrapper
+from visualization import to_img
 
 if __name__ == '__main__':
     seed = 55
@@ -42,8 +43,10 @@ if __name__ == '__main__':
     valloader = torch.utils.data.DataLoader(valset, batch_size=batch_size, shuffle=False, pin_memory=True,
                                           num_workers=3)
     net = MLPWrapper(N=NTrainPointsMNIST)
-    for epoch in range(5):
-        lr = 0.01
-        net.fit(trainloader, lr=lr, epoch=epoch)
-        net.validate(valloader)
-    net.save(rootpath + "model.pt")
+    # for epoch in range(50):
+    #     lr = 0.01
+    #     net.fit(trainloader, lr=lr, epoch=epoch)
+    #     net.validate(valloader)
+    net.load(rootpath + "model_50.pt")
+    img = net.generate_from_noise_low_uncertainty()
+    to_img(torch.reshape(img, [28, 28]).cpu().numpy(), "tmp2.png")
